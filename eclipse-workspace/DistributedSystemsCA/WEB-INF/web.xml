@@ -30,5 +30,4 @@
     <param-name>resteasy.servlet.mapping.prefix</param-name>
     <param-value>/restful-services</param-value>
   </context-param>
-
 </web-app>
