@@ -14,7 +14,7 @@ public class MemberDAO {
         EntityManager em = emf.createEntityManager();
         em.getTransaction().begin();
 
-        // if JSON sent only plan.id, attach a managed reference
+        // If JSON sent only plan.id, attach a managed reference
         if (m.getPlan() != null && m.getPlan().getId() != 0) {
             MembershipPlan ref = em.getReference(MembershipPlan.class, m.getPlan().getId());
             m.setPlan(ref);
@@ -32,5 +32,14 @@ public class MemberDAO {
         em.getTransaction().commit();
         em.close();
         return out;
+    }
+    
+    public Member findById(int id) {
+        EntityManager em = emf.createEntityManager();
+        em.getTransaction().begin();
+        Member m = em.find(Member.class, id);
+        em.getTransaction().commit();
+        em.close();
+        return m;
     }
 }
