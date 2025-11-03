@@ -14,7 +14,8 @@ public class PaymentDAO {
 
     public PaymentDAO() {}
 
-    // INSERT
+    // Inserts a new payment into db
+    //
     public void persist(Payment payment) {
         EntityManager em = emf.createEntityManager();
         em.getTransaction().begin();
@@ -23,7 +24,9 @@ public class PaymentDAO {
         em.close();
     }
 
-    // SELECT * FROM Payment
+    // Gets all payments from db
+    //SELECT * FROM Payment
+    // @return a list of all payments
     public List<Payment> findAll() {
         EntityManager em = emf.createEntityManager();
         em.getTransaction().begin();
@@ -33,7 +36,7 @@ public class PaymentDAO {
         return list;
     }
 
-    // SELECT * FROM Payment WHERE member.id = ?
+    // Finds all payments made from a specific member
     public List<Payment> findByMemberId(int memberId) {
         EntityManager em = emf.createEntityManager();
         em.getTransaction().begin();
@@ -41,7 +44,7 @@ public class PaymentDAO {
         em.getTransaction().commit();
         em.close();
 
-        
+        //filter manually by member ID
         java.util.ArrayList<Payment> results = new java.util.ArrayList<>();
         for (Payment p : allPayments) {
             if (p.getMember().getId() == memberId) {

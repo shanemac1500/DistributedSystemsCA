@@ -19,7 +19,8 @@ public class Payment {
     
     private String date;   
 
-    @ManyToOne(optional = false)
+    //Each payment is linked to one member
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
     private Member member;
 
     public Payment() {}

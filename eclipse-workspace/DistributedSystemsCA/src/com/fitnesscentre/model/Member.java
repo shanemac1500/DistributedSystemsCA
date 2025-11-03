@@ -11,7 +11,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class Member {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)//auto increments PK
     private int id;
 
     private String name;
@@ -20,7 +20,8 @@ public class Member {
     private String address;
     private String goal;
 
-    @ManyToOne
+    //Many members can share one plan
+    @ManyToOne(fetch = FetchType.EAGER)
     private MembershipPlan plan;   // member is linked to one plan
 
     // Constructors
