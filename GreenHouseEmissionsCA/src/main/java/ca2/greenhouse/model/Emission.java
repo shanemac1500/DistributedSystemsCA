@@ -4,22 +4,36 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 
-@Entity
+@Entity // this marks the class as a table managed by Hibernate
 public class Emission {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue // auto-increments the id for each new row
     private int id;
 
+    // stores the category code from JSON/XML (e.g. "1.A.1", etc)
     private String categoryCode;
+
+    // stores the description for the category (loaded from data or API)
     private String categoryDescription;
+
+    // numeric emission value
     private double value;
+
+    // year of the emission (always 2023 for this CA)
     private int year;
+
+    // "WEM", "Actual 2023", etc
     private String scenario;
+
+    // approval flag so user can mark records as final
     private boolean approved;
+
+    // username of the user who approved the record
     private String approvedBy;
 
     public Emission() {
+        // empty constructor needed by Hibernate
     }
 
     public int getId() {
