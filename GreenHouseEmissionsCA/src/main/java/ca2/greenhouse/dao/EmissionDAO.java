@@ -28,14 +28,19 @@ public class EmissionDAO {
                  .getResultList();
     }
 
-    // get emissions that match a specific category code
-    public List<Emission> findByCategoryCode(String code) {
-        return em.createQuery(
-                    "SELECT e FROM Emission e WHERE e.categoryCode = :code",
-                    Emission.class)
-                 .setParameter("code", code)
-                 .getResultList();
-    }
+
+ // Get by category code
+ public List<Emission> findByCategoryCode(String code) {
+     // normalise incoming value a 
+     String trimmed = code.trim();
+
+     return em.createQuery(
+             "SELECT e FROM Emission e " +
+             "WHERE TRIM(e.category.code) = :code",  // use Category.code, trim in JPQL
+             Emission.class)
+             .setParameter("code", trimmed)
+             .getResultList();
+ }
 
     // find a single emission by id
     public Emission findById(int id) {

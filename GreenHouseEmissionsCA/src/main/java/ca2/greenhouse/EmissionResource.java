@@ -12,190 +12,53 @@ import javax.ws.rs.core.Response;
 
 import javax.inject.Inject;
 
-import javax.inject.Inject;
-
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.List;
 
 import org.jboss.resteasy.annotations.jaxrs.PathParam;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
 
 import ca2.greenhouse.dao.EmissionDAO;
 import ca2.greenhouse.model.Emission;
-<<<<<<< HEAD
-import ca2.greenhouse.model.EmissionRecord;
 import ca2.greenhouse.parser.EmissionXmlParser;
-
-
-@Path("/emissions")
-public class EmissionResource {
-
-    @Inject
-    EmissionDAO emissionDAO;
-    
-=======
 import ca2.greenhouse.parser.EmissionJsonParser;
-import ca2.greenhouse.parser.EmissionXmlParser;
+import ca2.greenhouse.UserAuthService;
 
 
 // main REST resource for all emission endpoints
 @Path("/emissions")
 public class EmissionResource {
+	
+	@Inject
+	UserAuthService authService;  // simple in-memory login state
 
     // DAO for talking to the Emission table
     @Inject
     EmissionDAO emissionDAO;
     
-
-    @Inject
-    EmissionJsonParser jsonParser;
-    
-    // XML parser  for the projections file
->>>>>>> a1f020b (added user system, CRUD features, XML/JSON parsers refactor, and removal of EmissionRecord)
+    // XML parser bean for the projections file
     @Inject
     EmissionXmlParser xmlParser;
 
+    // JSON parser bean for the actual readings file
+    @Inject
+    EmissionJsonParser jsonParser;
 
-<<<<<<< HEAD
-    // simple test endpoint
-=======
+
     // simple test endpoint to check if the service is running
->>>>>>> a1f020b (added user system, CRUD features, XML/JSON parsers refactor, and removal of EmissionRecord)
     @GET
     @Produces(MediaType.TEXT_PLAIN)
     public String hello() {
         return "hello";
     }
 
-<<<<<<< HEAD
-    //returns raw JSON array from the file
-    @GET
-    @Path("/all")
-=======
-    // returns the raw JSON array straight from the JSON file (no DB)
-    @GET
-    @Path("all")
->>>>>>> a1f020b (added user system, CRUD features, XML/JSON parsers refactor, and removal of EmissionRecord)
-    @Produces(MediaType.APPLICATION_JSON)
-    public String allEmissions() {
-        try {
-            JSONParser parser = new JSONParser();
-
-<<<<<<< HEAD
-=======
-            // read JSON file from resources
->>>>>>> a1f020b (added user system, CRUD features, XML/JSON parsers refactor, and removal of EmissionRecord)
-            InputStream is = getClass().getClassLoader()
-                    .getResourceAsStream("GreenhouseGasEmissions2025.json");
-            if (is == null) {
-                return "{\"error\":\"GreenhouseGasEmissions2025.json not found on classpath\"}";
-            }
-
-            JSONObject root = (JSONObject) parser.parse(new InputStreamReader(is));
-            JSONArray emissions = (JSONArray) root.get("Emissions");
-
-            return emissions.toJSONString();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return "{\"error\":\"" + e.getMessage() + "\"}";
-        }
-    }
-
-<<<<<<< HEAD
-    //read JSON and insert into Emission table
-    @GET
-    @Path("/load-json")
-=======
-    // read JSON and insert the filtered rows into the Emission table
+    // read JSON file, parse it and insert the filtered rows into the Emission table
     @GET
     @Path("load-json")
->>>>>>> a1f020b (added user system, CRUD features, XML/JSON parsers refactor, and removal of EmissionRecord)
     @Produces(MediaType.TEXT_PLAIN)
     public String loadFromJson() {
         int inserted = 0;
 
-<<<<<<< HEAD
-        try {
-            JSONParser parser = new JSONParser();
-
-            InputStream is = getClass().getClassLoader()
-                    .getResourceAsStream("GreenhouseGasEmissions2025.json");
-            if (is == null) {
-                return "GreenhouseGasEmissions2025.json not found on classpath";
-            }
-
-            JSONObject root = (JSONObject) parser.parse(new InputStreamReader(is));
-            JSONArray emissions = (JSONArray) root.get("Emissions");
-
-            for (Object o : emissions) {
-                JSONObject row = (JSONObject) o;
-
-                // only keep values > 0
-                Number valNumber = (Number) row.get("Value");
-                if (valNumber == null) {
-                    continue;
-                }
-                double value = valNumber.doubleValue();
-                if (value <= 0) {
-                    continue;
-                }
-
-                String category = (String) row.get("Category");
-                String gasUnits = (String) row.get("Gas Units");
-
-                Emission e = new Emission();
-                // JSON file is for 2023
-                e.setYear(2023);
-               
-                
-                e.setScenario("Actual 2023");
-                e.setCategoryCode(category);
-                // temporary 
-                e.setCategoryDescription(gasUnits);
-                e.setValue(value);
-                e.setApproved(false);
-                e.setApprovedBy(null);
-
-                emissionDAO.save(e);
-                inserted++;
-            }
-
-            return "Inserted " + inserted + " emission records from JSON.";
-        } catch (Exception e) {
-            e.printStackTrace();
-            return "Error while loading JSON: " + e.getMessage();
-        }
-    }
-    
- //reads XML predictions and insert filtered rows into Emission table
-    @GET
-    @Path("/load-xml")
-    @Produces(MediaType.TEXT_PLAIN)
-    public String loadFromXml() {
-
-        // Parse XML rows (Year, Scenario, Category__1_3, Gas___Units, Value...)
-        java.util.List<EmissionRecord> records = xmlParser.parseXmlEmissions();
-
-        int inserted = 0;
-
-        for (EmissionRecord rec : records) {
-
-            //  Emission entity
-            Emission e = new Emission();
-            e.setYear(rec.getYear());
-            e.setScenario(rec.getScenario());              
-            e.setCategoryCode(rec.getCategoryCode());      // Category__1_3
-            e.setCategoryDescription(rec.getCategoryDescription()); // Gas___Units
-            e.setValue(rec.getValue());
-
-            // start as not approved
-            e.setApproved(false);
-            e.setApprovedBy(null);
-
-=======
         // parse JSON into a list of Emission entities
         List<Emission> records = jsonParser.parseJsonEmissions();
 
@@ -207,7 +70,7 @@ public class EmissionResource {
         return "Inserted " + inserted + " emission records from JSON.";
     }
     
-    // reads XML predictions and inserts the filtered rows into the Emission table
+    // read XML projections file and insert the filtered rows into the Emission table
     @GET
     @Path("load-xml")
     @Produces(MediaType.TEXT_PLAIN)
@@ -219,7 +82,10 @@ public class EmissionResource {
         int inserted = 0;
 
         for (Emission e : records) {
->>>>>>> a1f020b (added user system, CRUD features, XML/JSON parsers refactor, and removal of EmissionRecord)
+            // XML imports start off as not approved
+            e.setApproved(false);
+            e.setApprovedBy(null);
+
             emissionDAO.save(e);
             inserted++;
         }
@@ -227,26 +93,21 @@ public class EmissionResource {
         return "XML parse complete. Filtered records (2023, WEM, value > 0): " + inserted;
     }
     
-<<<<<<< HEAD
-    // Return all emissions stored in the DB as JSON
-    @GET
-    @Path("/db/all")
-=======
-
-    // return all emissions stored in the DB as a JSON array
+ // Return all emissions stored in the DB as JSON
     @GET
     @Path("db/all")
->>>>>>> a1f020b (added user system, CRUD features, XML/JSON parsers refactor, and removal of EmissionRecord)
     @Produces(MediaType.APPLICATION_JSON)
     public String allFromDb() {
+
+        // user must be logged in to view emissions
+        if (!authService.isLoggedIn()) {
+            return "{\"error\":\"You must be logged in to view emissions.\"}";
+        }
+
         List<Emission> list = emissionDAO.findAll();
 
         JSONArray arr = new JSONArray();
 
-<<<<<<< HEAD
-=======
-        // manually build JSON objects so I have full control over the fields
->>>>>>> a1f020b (added user system, CRUD features, XML/JSON parsers refactor, and removal of EmissionRecord)
         for (Emission e : list) {
             JSONObject obj = new JSONObject();
             obj.put("id", e.getId());
@@ -263,25 +124,21 @@ public class EmissionResource {
         return arr.toJSONString();
     }
 
-<<<<<<< HEAD
-    // Return emissions filtered by category code
-    @GET
-    @Path("/db/category/{code}")
-=======
-    // return emissions filtered by category code
+ // Return emissions filtered by category code
     @GET
     @Path("db/category/{code}")
->>>>>>> a1f020b (added user system, CRUD features, XML/JSON parsers refactor, and removal of EmissionRecord)
     @Produces(MediaType.APPLICATION_JSON)
     public String byCategory(@PathParam String code) {
+
+        // user must be logged in to view by category
+        if (!authService.isLoggedIn()) {
+            return "{\"error\":\"You must be logged in to view emissions by category.\"}";
+        }
+
         List<Emission> list = emissionDAO.findByCategoryCode(code);
 
         JSONArray arr = new JSONArray();
 
-<<<<<<< HEAD
-=======
-        // same JSON format as /db/all but only for one category
->>>>>>> a1f020b (added user system, CRUD features, XML/JSON parsers refactor, and removal of EmissionRecord)
         for (Emission e : list) {
             JSONObject obj = new JSONObject();
             obj.put("id", e.getId());
@@ -298,12 +155,6 @@ public class EmissionResource {
         return arr.toJSONString();
     }
     
-<<<<<<< HEAD
-    
-    
-
-}
-=======
     // get a single emission record by id from the DB
     @GET
     @Path("db/{id}")
@@ -366,7 +217,6 @@ public class EmissionResource {
         }
 
         // only update fields that are actually sent in the request
-        // same pattern that was used in the FitnessService example
         if (incoming.getYear() != 0) existing.setYear(incoming.getYear());
         if (incoming.getScenario() != null) existing.setScenario(incoming.getScenario());
         if (incoming.getCategoryCode() != null) existing.setCategoryCode(incoming.getCategoryCode());
@@ -393,13 +243,21 @@ public class EmissionResource {
         return Response.ok("Emission " + id + " deleted.").build();
     }
     
-    // approve an emission and store the username of whoever approved it
+ // Approve an emission using the currently logged-in user
     @PUT
-    @Path("db/{id}/approve/{username}")
+    @Path("db/{id}/approve")   // IMPORTANT: no leading slash here
     @Produces(MediaType.TEXT_PLAIN)
-    public Response approve(@PathParam("id") int id,
-                            @PathParam("username") String username) {
+    public Response approve(@PathParam("id") int id) {
 
+        // 1. Must be logged in
+        String currentUser = authService.getCurrentUser();
+        if (currentUser == null) {
+            return Response.status(Response.Status.UNAUTHORIZED)
+                           .entity("You must be logged in to approve emissions.")
+                           .build();
+        }
+
+        // 2. Find the emission
         Emission existing = emissionDAO.findById(id);
         if (existing == null) {
             return Response.status(Response.Status.NOT_FOUND)
@@ -407,11 +265,12 @@ public class EmissionResource {
                            .build();
         }
 
+        // 3. Approve + record who did it
         existing.setApproved(true);
-        existing.setApprovedBy(username);
+        existing.setApprovedBy(currentUser);
 
         emissionDAO.update(existing);
-        return Response.ok("Emission " + id + " approved by " + username).build();
+
+        return Response.ok("Emission " + id + " approved by " + currentUser).build();
     }
 }
->>>>>>> a1f020b (added user system, CRUD features, XML/JSON parsers refactor, and removal of EmissionRecord)

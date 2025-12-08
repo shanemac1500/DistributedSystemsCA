@@ -3,37 +3,30 @@ package ca2.greenhouse.model;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.ManyToOne;
+import javax.persistence.JoinColumn;
 
-@Entity // this marks the class as a table managed by Hibernate
+@Entity
 public class Emission {
 
     @Id
-    @GeneratedValue // auto-increments the id for each new row
+    @GeneratedValue
     private int id;
 
-    // stores the category code from JSON/XML (e.g. "1.A.1", etc)
     private String categoryCode;
-
-    // stores the description for the category (loaded from data or API)
     private String categoryDescription;
-
-    // numeric emission value
     private double value;
-
-    // year of the emission (always 2023 for this CA)
     private int year;
-
-    // "WEM", "Actual 2023", etc
     private String scenario;
-
-    // approval flag so user can mark records as final
     private boolean approved;
-
-    // username of the user who approved the record
     private String approvedBy;
 
+    
+    @ManyToOne
+    @JoinColumn(name = "category_id")
+    private Category category;
+
     public Emission() {
-        // empty constructor needed by Hibernate
     }
 
     public int getId() {
@@ -87,5 +80,14 @@ public class Emission {
     }
     public void setApprovedBy(String approvedBy) {
         this.approvedBy = approvedBy;
+    }
+
+    //getter/setter for Category
+
+    public Category getCategory() {
+        return category;
+    }
+    public void setCategory(Category category) {
+        this.category = category;
     }
 }

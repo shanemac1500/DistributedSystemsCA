@@ -16,7 +16,7 @@ public class User {
     // username the person will use to log in
     private String username;
 
-    // plain text password (fine for this CA since no hashing needed)
+    // plain text password 
     private String password;   
 
     public User() {

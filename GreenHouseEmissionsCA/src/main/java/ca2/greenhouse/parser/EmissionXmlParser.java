@@ -18,13 +18,13 @@ import ca2.greenhouse.model.Emission;
 @ApplicationScoped 
 public class EmissionXmlParser {
 
-    // parse the XML file and build Emission entities directly
+    // Parse the XML projection file and convert each valid row into an Emission entity
     public List<Emission> parseXmlEmissions() {
 
         List<Emission> results = new ArrayList<>();
 
         try {
-            // load the XML file from resources
+            // Load XML from src/main/resources
             InputStream in = getClass().getClassLoader()
                     .getResourceAsStream("GreenhouseEmissions2025.xml");
 
@@ -33,6 +33,7 @@ public class EmissionXmlParser {
                 return results;
             }
 
+            //DOM setup
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             DocumentBuilder builder = factory.newDocumentBuilder();
 
@@ -41,7 +42,7 @@ public class EmissionXmlParser {
 
             System.out.println("Root element: " + doc.getDocumentElement().getNodeName());
 
-            // each row is inside a <Row> element
+            // All emission rows are stored inside <Row> tags
             NodeList nodes = doc.getElementsByTagName("Row");
 
             for (int i = 0; i < nodes.getLength(); i++) {
@@ -51,13 +52,14 @@ public class EmissionXmlParser {
                 if (node.getNodeType() == Node.ELEMENT_NODE) {
                     Element elem = (Element) node;
 
-                    // <Category__1_3>, <Year>, <Scenario>, <Gas___Units>, <Value>
+                    // Extract the tags we need from this <Row>
                     String yearText      = getTagText(elem, "Year");
                     String scenario      = getTagText(elem, "Scenario");
                     String code          = getTagText(elem, "Category__1_3");
                     String description   = getTagText(elem, "Gas___Units");
                     String valueText     = getTagText(elem, "Value");
 
+                    // Skip rows missing critical fields
                     if (yearText == null || scenario == null || valueText == null) {
                         continue;
                     }
@@ -65,12 +67,12 @@ public class EmissionXmlParser {
                     int year = Integer.parseInt(yearText.trim());
                     double value = Double.parseDouble(valueText.trim());
 
-                    // keep only 2023 + WEM + value > 0
+                    // Apply the CA rules: year must be 2023, scenario must be WEM, value > 0
                     if (year != 2023) continue;
                     if (!"WEM".equalsIgnoreCase(scenario.trim())) continue;
                     if (value <= 0) continue;
 
-                    // build Emission entity directly
+                    // Build a new Emission entity from this XML row
                     Emission e = new Emission();
                     e.setYear(year);
                     e.setScenario(scenario);
@@ -93,7 +95,7 @@ public class EmissionXmlParser {
         return results;
     }
 
-    // helper method to read tag text
+    // Helper method: returns the text inside a tag, or null if the tag is missing
     private String getTagText(Element parent, String tagName) {
         NodeList list = parent.getElementsByTagName(tagName);
         if (list == null || list.getLength() == 0) return null;
